@@ -41,6 +41,7 @@ public class FriendDriver extends Application{
 		outputField.setEditable(false);
 		outputField.setWrapText(true);
 		outputField.setPrefSize(300, 450);
+		outputField.setText("Commands that exist:\n--clear : clears the chat\n--init    : adds words to program memory\n--reset : clears program memory and chat\n\n\n");
 		
 		TextField inputField = new TextField();
 		inputField.setPromptText("Type here...");
@@ -51,6 +52,17 @@ public class FriendDriver extends Application{
 			String next = friend.respond(inputField.getText());
 			outputField.appendText("\t"+next+"\n\n");
 			inputField.setEditable(true);
+			if(inputField.getText().equals("--clear")) {
+				outputField.setText("");
+			}
+			if(inputField.getText().equals("--init")) {
+				friend.getPrevData();
+				outputField.setText("--init\n\tMy memories have returned\n");
+			}
+			if(inputField.getText().equals("--reset")) {
+				friend.clearMemory();
+				outputField.setText("");
+			}
 			inputField.setText("");
 		});
 		order.getChildren().add(outputField);

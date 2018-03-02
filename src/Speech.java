@@ -6,6 +6,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.Scanner;
 
 /**
  * Class designed to gain data and mimic simple speech.
@@ -23,19 +24,16 @@ public class Speech {
 	}
 	
 	/**
-	 * Method called to return the output given the input string. It initializes on the first call and then
+	 * Method called to return the output given the input string. It then
 	 * uses the data to calculate responses.
 	 * 
 	 * @param input
 	 * @return
 	 */
 	public String respond(String input) {
-		if(!hasinit) {
-			for(int i=0;i<poeText.length;i++) {
-				initialize(poeText[i]);
-			}
-			hasinit = true;
-		}
+		input = input.toLowerCase();
+		handleInput(input);
+		
 		String[] in = input.split(" ");
 		String output = "";
 		String t = in[in.length-1];
@@ -57,7 +55,7 @@ public class Speech {
 			output += current.getWord()+" ";
 			next = current.nextWord();
 		}
-		for(int i=0;i<20;i++) {
+		for(int i=0;i<20;i++) {  //20
 			for(WordData data : words) {
 				String c = data.getWord();
 				if(next.equals(c)) {
@@ -89,7 +87,7 @@ public class Speech {
 	 * 
 	 * @param word
 	 */
-	public void initialize(String word) {
+	private void initialize(String word) {
 		try {
 			URL website = new URL("http://www.textfiles.com/etext/AUTHORS/POE/"+word+".txt");
 			InputStream inst = website.openStream();
@@ -114,29 +112,24 @@ public class Speech {
 	}
 	
 	/**
-	 * Method called to handle the current string input from the online
-	 * datasource.
+	 * Method called to handle the current string input from the
+	 * data source.
 	 * 
 	 * @param current
 	 */
 	private void handleInput(String current) {
-		current = current.replaceAll("[^a-zA-Z]"," ");
-		current = current.replace("px", " ");
-		current = current.replace(" y ", " ");
-		current = current.replace(" x ", " ");
-		current = current.replace("xlink"," ");
-		current = current.replace(" org ", " ");
-		current = current.replace(" w "," ");
-		current = current.replace(" www "," ");
-		current = current.replace(" http "," ");
-		current = current.replace(" xmlns "," ");
-		current = current.replace(" svg "," ");
-		current = current.replace(" Capa "," ");
+		current = current.toLowerCase();
+//		current = current.replaceAll("[^a-zA-Z]"," ");
+		current = current.replace(")","");
+		current = current.replace("(","");
+		for(int i=0;i<10;i++) {
+			current = current.replaceAll(""+i, "");
+		}
 		String[] parts = current.split(" ");
 		for(int i=0;i<parts.length;i++) {
 			WordData next = new WordData("");
 			words.add(next);
-			if(!contains(parts[i]) && !parts[i].equals("dead")) {
+			if(!contains(parts[i]) && !parts[i].equals("hubabababa")) {
 				next = new WordData(parts[i]);
 				words.add(next);
 			}
@@ -190,7 +183,7 @@ public class Speech {
 		public String nextWord() {
 			Random rand = new Random();
 			if(nextWords.size()<1) {
-				nextWords.add("dead");
+				nextWords.add("hubabababa");
 			}
 			int w = rand.nextInt(nextWords.size());
 			String output = "";
@@ -203,6 +196,44 @@ public class Speech {
 			}
 			return output;
 		}
+	}
+	
+	/**
+	 * Method called to add common phrases to the memory list of
+	 * the program.
+	 */
+	private void getCommon() {
+		String current = "";
+		InputStream inStream = Speech.class.getResourceAsStream("common.txt");
+		Scanner scan = new Scanner(inStream);
+		scan.useDelimiter("\n");
+		while((current = scan.nextLine()) !=null && scan.hasNextLine()) {
+			handleInput(current);
+		}
+		scan.close();
+	}
+	
+	/**
+	 * Method called to add all the data into memory for access 
+	 * by the program.
+	 */
+	public void getPrevData() {
+		if(!hasinit) {
+			for(int i=0;i<poeText.length;i++) {
+				initialize(poeText[i]);
+			}
+			hasinit = true;
+			getCommon();
+		}
+	}
+	
+	/**
+	 * Method called to reset the memory of the 
+	 * program and also clear the screen.
+	 */
+	public void clearMemory() {
+		words = new ArrayList<WordData>();
+		hasinit = false;
 	}
 	
 
