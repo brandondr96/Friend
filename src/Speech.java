@@ -75,7 +75,10 @@ public class Speech {
 			}
 		}
 		output = output.replace("  "," ");
-		char p = (char) (output.charAt(0)-32);
+		char p = output.charAt(0);
+		if(p>96) {
+			p = (char) (output.charAt(0)-32);
+		}
 		output = p+output.substring(1, output.length()-1);
 		return output;
 	}
