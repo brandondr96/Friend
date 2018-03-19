@@ -1,12 +1,5 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Random;
-import java.util.Scanner;
 
 /**
  * Class designed to gain data and mimic simple speech.
@@ -14,15 +7,42 @@ import java.util.Scanner;
  * @author Brandon Dalla Rosa
  *
  */
-public class Speech {
+public class ResponseSpeech {
 	ArrayList<WordData> words;
-	String[] poeText = {"alone","assignat","atale","balloon","berenice","blackcat","cask","eleonora","fallushr","maelstrm","masque_r","raven","rue","telltale","the_pit","usher"};
 	boolean hasinit = false;
-	Speech(){
+	String[] keyWords = {"what","why","who","where","when"};
+	ArrayList<String> starters = new ArrayList<String>();
+	ResponseSpeech(){
 		words = new ArrayList<WordData>();
 		words.add(new WordData("hello"));
 	}
-	
+	public void addInfo(String input) {
+		input = input.toLowerCase();
+		handleInput(input);	
+	}
+	public void addInput(String input) {
+		input = input.toLowerCase();
+		String[] in = input.split(" ");
+		for(int i=0;i<keyWords.length;i++) {
+			for(int ii=0;ii<in.length;ii++) {
+				if(in[ii].equals(keyWords[0])) {
+					starters.add("The");
+				}
+				if(in[ii].equals(keyWords[1])) {
+					starters.add("Because");
+				}
+				if(in[ii].equals(keyWords[2])) {
+					starters.add("They");
+				}
+				if(in[ii].equals(keyWords[3])) {
+					starters.add("The");
+				}
+				if(in[ii].equals(keyWords[4])) {
+					starters.add("The");
+				}
+			}
+		}	
+	}
 	/**
 	 * Method called to return the output given the input string. It then
 	 * uses the data to calculate responses.
@@ -30,41 +50,47 @@ public class Speech {
 	 * @param input
 	 * @return
 	 */
-	public String respond(String input) {
-		input = input.toLowerCase();
-		handleInput(input);
+	public String respond() {
 		
-		String[] in = input.split(" ");
 		String output = "";
-		String t = in[in.length-1];
-		boolean plz = false;
-		for(WordData w : words) {
-			if(w.getWord().equals(t)) {
-				plz=true;
-			}
-		}
 		String next = "";
-		WordData current = new WordData("");
-		Random rand = new Random();
-		if(plz) {
-			next = t;
+		if(starters.size()>0) {
+			next = starters.get(0);
 		}
 		else {
-			int w = rand.nextInt(words.size());
-			current = words.get(w);
-			output += current.getWord()+" ";
-			next = current.nextWord();
+			next = "I";
+			if(words.size()>2) {
+				next = words.get(2).getWord();
+			}
 		}
+		WordData current = new WordData(next);
+		current.addWord("am");
+		current.addWord("hate");
+		current.addWord("enjoy");
+		current.addWord("think");
+		for(WordData w : words) {
+			if(w.getWord().equals(next)) {
+				current = w;
+			}
+		}
+		output += current.getWord()+" ";
+		next = current.nextWord();
+		Random rand = new Random();
 		for(int i=0;i<20;i++) {  //20
+			boolean nextInWords = false;
 			for(WordData data : words) {
 				String c = data.getWord();
 				if(next.equals(c)) {
 					current = data;
+					nextInWords = true;
 				}
 			}
-			if(!current.nextWord().equals(next)) {
+			if(!current.nextWord().equals(next) && nextInWords) {
 				output += current.getWord()+" ";
 				next = current.nextWord();
+				if(current.getWord().contains(".") || current.getWord().contains("!")|| current.getWord().contains("?")) {
+					break;
+				}
 			}
 			else {
 				int w = rand.nextInt(words.size());
@@ -82,36 +108,6 @@ public class Speech {
 	}
 	
 	/**
-	 * Method called to initialize the data in the program for speech generation. It is only
-	 * called a single time.
-	 * 
-	 * @param word
-	 */
-	private void initialize(String word) {
-		try {
-			URL website = new URL("http://www.textfiles.com/etext/AUTHORS/POE/"+word+".txt");
-			InputStream inst = website.openStream();
-			InputStreamReader red = new InputStreamReader(inst);
-			BufferedReader buf = new BufferedReader(red);
-			String current = "";
-			while((current = buf.readLine())!=null) {
-				if(current.contains(" ")&& !current.contains("<") && !current.contains(">") && !current.contains("/")&& !current.contains("%")&& !current.contains(":")) {
-					handleInput(current);
-				}
-			}
-			inst.close();
-			red.close();
-			buf.close();
-		}
-		catch (MalformedURLException error) {
-			System.out.println("URL error.");
-		}
-		catch (IOException error) {
-			System.out.println("IO error.");
-		}
-	}
-	
-	/**
 	 * Method called to handle the current string input from the
 	 * data source.
 	 * 
@@ -119,7 +115,6 @@ public class Speech {
 	 */
 	private void handleInput(String current) {
 		current = current.toLowerCase();
-//		current = current.replaceAll("[^a-zA-Z]"," ");
 		current = current.replace(")","");
 		current = current.replace("(","");
 		for(int i=0;i<10;i++) {
@@ -195,35 +190,6 @@ public class Speech {
 				output = words.get(w).getWord();
 			}
 			return output;
-		}
-	}
-	
-	/**
-	 * Method called to add common phrases to the memory list of
-	 * the program.
-	 */
-	private void getCommon() {
-		String current = "";
-		InputStream inStream = Speech.class.getResourceAsStream("common.txt");
-		Scanner scan = new Scanner(inStream);
-		scan.useDelimiter(".");
-		while((current = scan.nextLine()) !=null && scan.hasNextLine()) {
-			handleInput(current);
-		}
-		scan.close();
-	}
-	
-	/**
-	 * Method called to add all the data into memory for access 
-	 * by the program.
-	 */
-	public void getPrevData() {
-		if(!hasinit) {
-			for(int i=0;i<poeText.length;i++) {
-				initialize(poeText[i]);
-			}
-			hasinit = true;
-			getCommon();
 		}
 	}
 	

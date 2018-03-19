@@ -1,6 +1,5 @@
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Random;
 import java.util.Scanner;
 
 /**
@@ -39,16 +38,16 @@ public class neuroTester {
 		}
 		in4speech = input.split(" ")[0];
 		input = input.toLowerCase();
-		String output = handleInput(input);	
-		for(WordData w : words) {
-			if(w.getWord().equals(output)) {
-				prev = w;
-			}
-		}
+		String output = handleInput(input);
+		
 		if(add) {
-			prev.addPhrase(output);
+			prev.addPhrase(input);
 			add = true;
 		}
+		
+		WordData newWord = new WordData(output);
+		words.add(newWord);
+		prev = newWord;
 		return output;
 	}
 	
@@ -95,8 +94,12 @@ public class neuroTester {
 	
 	private String getSimilarOutput(String input) {
 		double[] scores = new double[words.size()];
+		String inputToAdd = "";
 		for(int i=0;i<words.size();i++) {
 			scores[i] = checkSimilarity(input,words.get(i).getWord());
+			if(scores[i]>40) { 												//threshold for learning
+				inputToAdd = inputToAdd+" "+words.get(i).nextWord();
+			}
 		}
 		double maxScore = 0;
 		int maxLoc = 0;
@@ -106,6 +109,8 @@ public class neuroTester {
 				maxLoc = i;
 			}
 		}
+		words.get(maxLoc).addInput(input);
+		words.get(maxLoc).addPhrase(inputToAdd);
 		String output = words.get(maxLoc).nextWord();
 		return output;
 	}
@@ -163,31 +168,23 @@ public class neuroTester {
 	 */
 	private class WordData{
 		String word;
-		ArrayList<String> nextPhrases;
+		ResponseSpeech markov;
 		WordData(String thisWord){
-			nextPhrases = new ArrayList<String>();
-			//nextPhrases.add(improv.respond(in4speech));
+			markov = new ResponseSpeech();
 			word = thisWord;
 		}
 		public void addPhrase(String next) {
-			nextPhrases.add(next);
+			markov.addInfo(next);
+		}
+		public void addInput(String input) {
+			markov.addInput(input);
 		}
 		public String getWord() {
 			return word;
 		}
 		public String nextWord() {
-			Random rand = new Random();
-			if(nextPhrases.size()<1) {
-				String nran = improv.respond(in4speech);
-				WordData nprev = new WordData(nran);
-				words.add(nprev);
-				add = false;
-				return nran;
-			}
-			int w = rand.nextInt(nextPhrases.size());
-			String output = "";
-			output = nextPhrases.get(w);
-			return output;
+			String ret = markov.respond();
+			return ret;
 		}
 	}
 	
