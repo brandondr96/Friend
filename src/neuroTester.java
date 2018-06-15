@@ -1,3 +1,4 @@
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -9,6 +10,7 @@ import java.util.Scanner;
  *
  */
 public class neuroTester {
+	private static final int THRESHOLD = 5;
 	ArrayList<WordData> words;
 	Speech improv = new Speech();
 	String in4speech = "";
@@ -97,7 +99,7 @@ public class neuroTester {
 		String inputToAdd = "";
 		for(int i=0;i<words.size();i++) {
 			scores[i] = checkSimilarity(input,words.get(i).getWord());
-			if(scores[i]>40) { 												//threshold for learning
+			if(scores[i]>THRESHOLD) { 												//threshold for learning
 				inputToAdd = inputToAdd+" "+words.get(i).nextWord();
 			}
 		}
@@ -194,6 +196,7 @@ public class neuroTester {
 	 */
 	private void getCommon() {
 		String current = "";
+		//InputStream inStream = Speech.class.getResourceAsStream("common.txt");
 		InputStream inStream = Speech.class.getResourceAsStream("common.txt");
 		Scanner scan = new Scanner(inStream);
 		scan.useDelimiter("\n");
